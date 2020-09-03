@@ -1,0 +1,27 @@
+{% extends 'base.html'%}
+
+{% block title %} About {% endblock %}
+
+{% block body %} 
+
+<h1> Welcome to Django Tutorial!!! </h1>
+
+<!-- Add context from view.py -->
+<h1> {{ list }} </h1> 
+
+{% for no in list %}
+<ul>
+  <li>
+    {{no}}
+  </li>
+</ul>
+{% endfor %}
+
+{% if list|length <= 3 %}
+<h1>True</h1>
+{% else %}
+<h1>False</h1>
+{% endif %}
+<!---->
+
+{% endblock %}
