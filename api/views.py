@@ -4,9 +4,13 @@ from rest_framework.parsers import JSONParser
 from .models import Movie, Rating
 from .serializers import MovieSerializer, RatingSerializer
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view 
+from rest_framework.response import Response
+from rest_framework import status
 
 # Create your views here.
 
+'''
 # Note that because we want to be able to POST to this view from clients that won't have a CSRF token we need to mark the view as csrf_exempt.
 @csrf_exempt
 def movies(request):
@@ -23,7 +27,26 @@ def movies(request):
       serializer.save()
       return JsonResponse(serializer.data, status = 201)
     return JsonResponse(serializer.error, status = 400)
+'''
 
+# api_view
+@api_view(['GET', 'POST'])
+def movies(request):
+  # Read
+  if request.method == 'GET':
+    movies = Movie.objects.all()
+    serializer = MovieSerializer(movies, many = True)
+    return Response(serializer.data)
+  # Create
+  elif request.method == 'POST':
+    serializer = MovieSerializer(data = request.data)
+
+    if serializer.is_valid():
+      serializer.save()
+      return Response(serializer.data, status = status.HTTP_201_CREATED)
+    return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+
+'''
 # Note that because we want to be able to POST to this view from clients that won't have a CSRF token we need to mark the view as csrf_exempt.
 @csrf_exempt
 def movie(request, id):
@@ -50,3 +73,30 @@ def movie(request, id):
   elif request.method == 'DELETE':
     movie.delete()
     return HttpResponse(status = 204)
+'''
+
+# api_view
+@api_view(['GET', 'PUT', 'DELETE'])
+def movie(request, movieId):
+  try: 
+    movie = Movie.objects.get(movieId = movieId)
+  
+  except Movie.DoesNotExist:
+    return HttpResponse(status = status.HTTP_404_NOT_FOUND)
+
+  # Read
+  if request.method == 'GET':
+    serializer = MovieSerializer(movie)
+    return  Response(serializer.data)
+  # Update
+  elif request.method == 'PUT':
+    serializer = MovieSerializer(movie, data = request.data )
+     
+    if serializer.is_valid():
+      serializer.save() 
+      return Response(serializer.data)
+    return  Response(serializer.error, status = status.HTTP_400_BAD_REQUEST)
+  # Delete
+  elif request.method == 'DELETE':
+    movie.delete()
+    return Response(status = status.HTTP_204_NO_CONTENT)

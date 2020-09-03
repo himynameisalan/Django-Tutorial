@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Movie, Rating
 
+'''
 ## Serializer
 class MovieSerializer(serializers.Serializer):
   movieId = serializers.CharField(max_length = 100)
@@ -16,6 +17,13 @@ class MovieSerializer(serializers.Serializer):
     instance.genres = validated_data.get('genres', instance.genres)
     instance.save()
     return instance 
+'''
+## ModelSerialzer
+class MovieSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Movie
+    # fields = ['movieId', 'title', 'genres']
+    fields = '__all__'
 
 ## ModelSerialzer
 class RatingSerializer(serializers.ModelSerializer):
