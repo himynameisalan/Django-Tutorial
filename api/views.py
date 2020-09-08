@@ -12,6 +12,8 @@ from rest_framework import generics
 from rest_framework import mixins
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 
@@ -86,9 +88,9 @@ def movie(request, id):
 
 # Use api_view decoration
 @api_view(['GET', 'PUT', 'DELETE'])
-def movie(request, movieId):
+def movie(request, pk):
     try:
-        movie = Movie.objects.get(movieId=movieId)
+        movie = Movie.objects.get(movieId=pk)
 
     except Movie.DoesNotExist:
         return HttpResponse(status=status.HTTP_404_NOT_FOUND)
@@ -109,10 +111,7 @@ def movie(request, movieId):
     elif request.method == 'DELETE':
         movie.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
 ########## Function based api view ##########
-
 
 ########## Class based api view ##########
 class MoviesAPIView(APIView):
@@ -131,9 +130,9 @@ class MoviesAPIView(APIView):
 
 
 class MovieAPIView(APIView):
-    def get_object(self, movieId):
+    def get_object(self, pk):
         try:
-            return Movie.objects.get(movieId=movieId)
+            return Movie.objects.get(movieId=pk)
 
         except Movie.DoesNotExist:
             return HttpResponse(status=status.HTTP_404_NOT_FOUND)
@@ -189,3 +188,56 @@ class GenericAPIView(generics.GenericAPIView,
 
     def delete(self, request, movieId = None):
         return self.destroy(request, movieId)
+######## Generic api view #########
+
+######## Viewset #########
+'''
+class MoviesViewSet(viewsets.ViewSet):
+    def list(self, request):
+        queryset = Movie.objects.all()
+        serializer = MovieSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
+        serializer = MovieSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None):
+        queryset = Movie.objects.all()
+        movie = get_object_or_404(queryset, movieId=pk)
+        serializer = MovieSerializer(movie)
+        return Response(serializer.data)
+
+    def update(self, request, pk=None):
+        movie = Movie.objects.get(movieId=pk)
+        serializer = MovieSerializer(movie, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.error, status=status.HTTP_400_BAD_REQUEST)
+'''
+######## Viewset #########
+
+######## GenericViewset #########
+'''
+class MoviesViewSet(viewsets.GenericViewSet,
+                    mixins.ListModelMixin,
+                    mixins.CreateModelMixin,
+                    mixins.UpdateModelMixin,
+                    mixins.RetrieveModelMixin,
+                    mixins.DestroyModelMixin):
+    serializer_class = MovieSerializer
+    queryset = Movie.objects.all()
+'''
+######## GenericViewset #########
+
+######## ModelViewset #########
+class MoviesViewSet(viewsets.ModelViewSet):
+    serializer_class = MovieSerializer
+    queryset = Movie.objects.all()
+######## GenericViewset #########
