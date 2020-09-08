@@ -10,6 +10,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import mixins
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
 
@@ -169,6 +171,9 @@ class GenericAPIView(generics.GenericAPIView,
     serializer_class = MovieSerializer
     queryset = Movie.objects.all()
     lookup_field = 'movieId'
+    # authentication_classes = [SessionAuthentication, BasicAuthentication]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, movieId = None):
         if movieId:
@@ -183,4 +188,4 @@ class GenericAPIView(generics.GenericAPIView,
         return self.update(request, movieId)
 
     def delete(self, request, movieId = None):
-        return self.destroy (request, movieId)
+        return self.destroy(request, movieId)
